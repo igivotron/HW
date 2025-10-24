@@ -16,7 +16,7 @@ class BEM:
         self.relax = 0.3
         self.max_iter = 1000
 
-        self.r = np.arange(hub_diameter/2, diameter/2, 0.01)
+        self.r = np.arange(hub_diameter/2, diameter/2, 0.001)
         self.a_list = np.zeros_like(self.r)
         self.aprime_list = np.zeros_like(self.r)
 
@@ -26,6 +26,9 @@ class BEM:
     
     def get_Cd(self, alpha):
         return 0
+    
+    def get_pitch(self):
+        return self.pitch
     
     def iterate(self, a0, aprim0, J, r):
         a = a0
@@ -38,7 +41,7 @@ class BEM:
             phi = atan( ((J*self.diameter) / (2*pi*r)) * ((1+a) / (1-aprim)) )
 
             sigma = (self.num_blades * self.chord)/(2 * pi * r)
-            alpha = self.pitch - phi
+            alpha = self.get_pitch() - phi
 
             Cl = self.get_Cl(alpha)
             Cd = self.get_Cd(alpha)
@@ -48,11 +51,11 @@ class BEM:
             a_new = ((sigma*Cn)*(1+a)) / (2*(1 - cos(2*phi)))
             aprim_new = ((sigma*Ct)*(1 - aprim)) / (2*sin(2*phi))
 
-            a = (1 - self.relax) * a + self.relax * a_new
-            aprim = (1 - self.relax) * aprim + self.relax * aprim_new
-
             if abs(a - a_new) < self.epsilon and abs(aprim - aprim_new) < self.epsilon:
                 break
+
+            a = (1 - self.relax) * a + self.relax * a_new
+            aprim = (1 - self.relax) * aprim + self.relax * aprim_new
 
             iter += 1
         
@@ -74,12 +77,21 @@ class BEM:
         kT = np.zeros_like(J)
         kQ = np.zeros_like(J)
         kP = np.zeros_like(J)
+        
         for j in range(J.size):
             self.solve(J[j])
-            kT[j] = ((4 * pi * J[j]**2)/(self.diameter**2)) * np.trapz( self.r * (1 - self.a_list) * self.a_list, self.r)
+            kT[j] = ((4 * pi * (J[j]**2))/(self.diameter**2)) * np.trapz( self.r * (1 + self.a_list) * self.a_list, self.r)
             kQ[j] = ((J[j] * 8 * pi**2)/(self.diameter**4)) * np.trapz( self.r**3 * (1 + self.a_list) * self.aprime_list, self.r)
             kP[j] = 2*pi * kQ[j]
-        return kT, kQ, kP
+            if kT[j] < 0: kT[j] = None
+            if kQ[j] < 0: kQ[j] = None
+            if kP[j] < 0: kP[j] = None
+            
+            if kT[j] is None and kQ[j] is None and kP[j] is None: break
+
+        etaP = (kT * J) / kP
+
+        return kT, kQ, kP, etaP
     
     
 
@@ -95,18 +107,8 @@ def get_solution():
 if __name__ == "__main__":
     J, kT_ref, kQ_ref, kP_ref, etaP_ref = get_solution()
     bem = BEM(diameter=1, hub_diameter=0.25, num_blades=2, chord=0.15, pitch=25)
+    kT, kQ, kP, etaP = bem.get_ks(J)
 
-    kT, kQ, kP = bem.get_ks(J)
-    plt.plot(J, kT, label="BEM kT")
-    plt.plot(J, kT_ref, label="Reference kT")
-    plt.plot(J, kQ, label="BEM kQ")
-    plt.plot(J, kQ_ref, label="Reference kQ")
-    plt.plot(J, kP, label="BEM kP")
-    plt.plot(J, kP_ref, label="Reference kP")
-    plt.xlabel("Advance Ratio J")
-    plt.legend()
-    plt.grid()
-    plt.show()
 
 
 
