@@ -10,7 +10,7 @@ import scipy.interpolate as sp
 
 def naca16_509_m06(a):
 
-    filename = 'naca16-509-m06_clcd.txt'
+    filename = 'naca16_509_python/naca16-509-m06_clcd.txt'
     f = open(filename,"r")
     f.readline()
     f1 = f.readlines()
@@ -59,19 +59,21 @@ def naca16_509_m06(a):
     cd = min(cd,cdmax)
     return cl,cd, interpolated
 
-alpha = np.linspace(-30, 30, 100)*np.pi/180
-print(alpha)
-CL = np.zeros_like(alpha)
-CD = np.zeros_like(alpha)
-interpolated = np.zeros_like(alpha)
-for i in range(len(CD)):
-    CL[i], CD[i], interpolated[i] = naca16_509_m06(alpha[i])
 
-np.save('NACA16_509_m06_alpha_Cl_Cd.npy', np.array([alpha, CL, CD]))
+if __name__ == "__main__":
+    alpha = np.linspace(-30, 30, 100)*np.pi/180
+    print(alpha)
+    CL = np.zeros_like(alpha)
+    CD = np.zeros_like(alpha)
+    interpolated = np.zeros_like(alpha)
+    for i in range(len(CD)):
+        CL[i], CD[i], interpolated[i] = naca16_509_m06(alpha[i])
 
-import matplotlib.pyplot as plt
+    np.save('NACA16_509_m06_alpha_Cl_Cd.npy', np.array([alpha, CL, CD]))
 
-plt.plot(alpha,CL)
-plt.plot(alpha,CD)
-plt.plot(alpha, interpolated)
-plt.show()
+    import matplotlib.pyplot as plt
+
+    plt.plot(alpha,CL)
+    plt.plot(alpha,CD)
+    plt.plot(alpha, interpolated)
+    plt.show()
