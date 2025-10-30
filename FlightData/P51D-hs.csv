@@ -1,0 +1,8 @@
+Supercharger Mode, RPM,MP [inHg],Pengine [bhp],Altitude [ft], TAS [mph]
+Low blower,3000,60.5,1450,5000,363
+Low blower,3000,60.5,1485,10000,394
+Low blower,3000,60.5,1530,16800,425
+High blower,3000,60.5,1270,23200,422
+High blower,3000,60.5,1275,29800,441
+High blower,3000,48.0,985,35000,421
+High blower,3000,40.7,815,38000,403
