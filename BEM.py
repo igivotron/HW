@@ -74,6 +74,15 @@ class BEM:
             aprime_curent = aprim_new
         return
     
+    def get_k(self, J):
+        self.solve(J)
+        kT = ((4 * pi * (J**2))/(self.diameter**2)) * np.trapz( self.r * (1 + self.a_list) * self.a_list, self.r)
+        kQ = ((J * 8 * pi**2)/(self.diameter**4)) * np.trapz( self.r**3 * (1 + self.a_list) * self.aprime_list, self.r)
+        kP = 2*pi * kQ
+        etaP = (kT * J) / kP
+
+        return kT, kQ, kP, etaP
+    
     def get_ks(self, J):
         kT = np.zeros_like(J)
         kQ = np.zeros_like(J)
@@ -99,3 +108,10 @@ class BEM:
             
 
         return kT, kQ, kP, etaP
+    
+    def printBEM(self):
+        print(f"Diameter: {self.diameter:.2f} m")
+        print(f"Number of Blades: {self.num_blades}")
+        print(f"Chord: {self.chord:.2f} m")
+        print(f"Reference Pitch Angle: {degrees(self.beta_ref):.2f} degrees")
+        print(f"Pitch Angle at r=R: {degrees(self.get_pitch(self.diameter/2)):.2f} degrees")
