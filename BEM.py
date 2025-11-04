@@ -20,6 +20,8 @@ class BEM:
         self.r = np.arange(hub_diameter/2, diameter/2, 0.005)
         self.a_list = np.zeros_like(self.r)
         self.aprime_list = np.zeros_like(self.r)
+
+        self.alpha = np.zeros_like(self.r)
     
     def get_C(self, alpha):
         cl, cd, _ = naca16_509_m06(alpha)
@@ -59,7 +61,7 @@ class BEM:
 
             iter += 1
 
-    
+        self.alpha[np.where(self.r == r)[0][0]] = alpha
         return a, aprim
         
     
@@ -108,6 +110,11 @@ class BEM:
             
 
         return kT, kQ, kP, etaP
+    
+    def BladeTipSpeed(self, RPM, reduce):
+        U_tip = (pi * self.diameter * RPM*reduce) / 60
+        return U_tip
+    
     
     def printBEM(self):
         print(f"Diameter: {self.diameter:.2f} m")
