@@ -28,8 +28,11 @@ class Aircraft:
         self.C1HB = -20.13
         self.C2HB = 1.849e-4
 
+    def getCd(self, rho, V, theta):
+        return (self.Cd0 + self.K * ( (self.M * 9.81 * cos(theta)) / (0.5 * rho * V**2 * self.A) )**2 )
+
     def getDrag(self, rho, V, theta):
-        return 0.5 * rho * V**2 * self.A * (self.Cd0 + self.K * ( (self.M * 9.81 * cos(theta)) / (0.5 * rho * V**2 * self.A) )**2 )
+        return 0.5 * rho * V**2 * self.A * self.getCd(rho, V, theta)
     
     def getCl(self, rho, V, theta):
         return (self.M * 9.81 * cos(theta)) / (0.5 * rho * V**2 * self.A)
@@ -70,6 +73,7 @@ class FlightData:
 
         self.n = (RPM / 60) * reduce  # rev/s
         self.omega = self.n * 2 * pi
+        self.reduce = reduce
         
         self.getAtmosphere()
 
@@ -147,5 +151,6 @@ class FlightAnalysis:
         
 
         return u0_sol, beta_pitch_sol
+    
     
 
