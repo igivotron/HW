@@ -129,13 +129,14 @@ class FlightAnalysis:
             u0, beta_pitch = vars
             if beta_pitch < 0: beta_pitch = 0
             if beta_pitch > radians(60): beta_pitch = radians(60)
-            if self.aircraft.Vz > u0: u0 = self.aircraft.Vz - 1
+            # if self.flightdata.Vz > u0: u0 = self.aircraft.Vz - 1
             return self.function(u0, beta_pitch)
         TAS_measured = self.flightdata.TAS_measured
         bounds = ((0.9*TAS_measured, radians(30)), (1.1*TAS_measured, radians(50)))
         sol = sp.optimize.least_squares(equations, (u0_guess, beta_pitch_guess), bounds=bounds)
         u0_sol, beta_pitch_sol = sol.x
         return u0_sol, beta_pitch_sol
+    
 
     def solve2(self, u0_guess, beta_pitch_guess):
         def equations(vars):
@@ -153,4 +154,16 @@ class FlightAnalysis:
         return u0_sol, beta_pitch_sol
     
     
+    def solve3(self):
+        beta_pitch_guess = radians(10)
+        u0 = self.flightdata.TAS_measured
+
+        def equations(beta_pitch):
+            if beta_pitch < 0: beta_pitch = 0
+            if beta_pitch > radians(60): beta_pitch = radians(60)
+            return self.function(u0, beta_pitch)
+        bounds = (radians(0), radians(60))
+        sol = sp.optimize.least_squares(equations, beta_pitch_guess, bounds=bounds)
+        beta_pitch_sol = sol.x
+        return beta_pitch_sol
 

@@ -21,7 +21,8 @@ analysis = FlightAnalysis(aircraft, flight)
 
 p, T, rho = stdatm(flight.altitude)
 
-
+beta = analysis.solve3()[0]
+blade.beta_pitch = beta
 
 Cl = aircraft.getCl(rho, flight.TAS_measured, 0)
 Cd = aircraft.getCd(rho, flight.TAS_measured, 0)
