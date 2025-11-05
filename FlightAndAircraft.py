@@ -34,7 +34,7 @@ class Aircraft:
     def getCl(self, rho, V, theta):
         return (self.M * 9.81 * cos(theta)) / (0.5 * rho * V**2 * self.A)
 
-    def fixTheta(self, Vz, V):
+    def getTheta(self, Vz, V):
         self.theta = asin(Vz / V)
         return self.theta
     
@@ -105,7 +105,7 @@ class FlightAnalysis:
         A = self.aircraft.A
         Cd0 = self.aircraft.Cd0
         K = self.aircraft.K
-        theta = self.aircraft.theta
+        theta = self.aircraft.getTheta(self.flightdata.Vz, u0)
         J = u0 / (n * D)
         if J < 0.1: J = 0.1
         self.aircraft.bem.beta_pitch = beta_pitch
@@ -119,17 +119,30 @@ class FlightAnalysis:
 
     def solve(self):
         u0_guess = self.flightdata.TAS_measured
-        theta_pitch_guess = radians(40)
+        beta_pitch_guess = radians(40)
 
         def equations(vars):
-            u0, theta_pitch = vars
-            if theta_pitch < 0: theta_pitch = 0
-            if theta_pitch > radians(60): theta_pitch = radians(60)
-            return self.function(u0, theta_pitch)
-        
+            u0, beta_pitch = vars
+            if beta_pitch < 0: beta_pitch = 0
+            if beta_pitch > radians(60): beta_pitch = radians(60)
+            if self.aircraft.Vz > u0: u0 = self.aircraft.Vz - 1
+            return self.function(u0, beta_pitch)
         TAS_measured = self.flightdata.TAS_measured
         bounds = ((0.9*TAS_measured, radians(30)), (1.1*TAS_measured, radians(50)))
-        sol = sp.optimize.least_squares(equations, (u0_guess, theta_pitch_guess), bounds=bounds)
+        sol = sp.optimize.least_squares(equations, (u0_guess, beta_pitch_guess), bounds=bounds)
+        u0_sol, beta_pitch_sol = sol.x
+        return u0_sol, beta_pitch_sol
+
+    def solve2(self, u0_guess, beta_pitch_guess):
+        def equations(vars):
+            u0, beta_pitch = vars
+            if beta_pitch < 0: beta_pitch = 0
+            if beta_pitch > radians(60): beta_pitch = radians(60)
+            return self.function(u0, beta_pitch)
+        Vz = self.flightdata.Vz
+        
+        bounds = ((Vz, radians(0)), (2*u0_guess, radians(60)))
+        sol = sp.optimize.least_squares(equations, (u0_guess, beta_pitch_guess), bounds=bounds)
         u0_sol, beta_pitch_sol = sol.x
         
 
