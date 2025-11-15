@@ -27,15 +27,14 @@ if not climb:
                             Vz=0,
                             reduce=0.477)
         analysis = FlightAnalysis(aircraft, flight)
-        u0_sol, theta_pitch_sol = analysis.solve()
+        u0_sol, beta_pitch_sol = analysis.solve()
         solutions[i, 0] = u0_sol
-        solutions[i, 1] = theta_pitch_sol
+        solutions[i, 1] = beta_pitch_sol
         J[i] = u0_sol / ( (flight.RPM / 60 * 0.477) * bem.diameter )
         etaP[i] = bem.get_k(J[i])[3]
         SFC = aircraft.getConsomption(flight.power * 745.7, flightData["Supercharger Mode"][i])  # W to bhp
 
         a = np.sqrt(1.4 * 287 * flight.T)
-        # MachBlade[i] = bem.BladeTipSpeed(flight.RPM, 0.477) / a
         MachBlade[i] = np.sqrt( (bem.BladeTipSpeed(flight.RPM, 0.477))**2 + (u0_sol)**2) / a
         consumptions[i] = SFC/1000 # in L/h
         alphaList[i] = bem.alpha
