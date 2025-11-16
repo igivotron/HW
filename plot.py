@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from naca16_509_python.naca16_509_m06_clcd import naca16_509_m06
 
 
 
@@ -50,11 +51,11 @@ if not climb:
     plt.title("Propulsive Efficiency vs Altitude for P-51D Mustang (High Speed)")
     plt.legend()
     plt.grid()
-    plt.savefig("figures/P51D-HS-PropulsiveEfficiency-vs-Altitude.png")
+    plt.savefig("figures/P51D-HS-PropulsiveEfficiency-vs-Altitude.svg")
     plt.clf()
 
     for i in range(alpha.shape[0]):
-        plt.plot(np.linspace(0, 1, alpha.shape[1]), np.degrees(alpha[i]), label=f"Point {i+1}")
+        plt.plot(np.linspace(0, 1, alpha.shape[1]), np.degrees(alpha[i]), label=f"Altitude {altitude[i]:.0f} ft")
     plt.xlabel("r/R")
     plt.ylabel("Angle of Attack α [deg]")
     plt.title("Angle of Attack Distribution along the Blade for P-51D Mustang (High Speed)")
@@ -62,6 +63,20 @@ if not climb:
     plt.grid()
     plt.savefig("figures/P51D-HS-AoA-distribution.png", bbox_inches='tight')
     plt.clf()
+
+    for i in range(alpha.shape[0]):
+        Cl = np.zeros(alpha.shape[1])
+        Cd = np.zeros(alpha.shape[1])
+        for j in range(alpha.shape[1]):
+            Cl[j], Cd[j], _ = naca16_509_m06(np.radians(alpha[i,j]))
+        plt.plot(np.linspace(0, 1, alpha.shape[1]), Cl, label=f"Altitude {altitude[i]:.0f} ft")
+    plt.xlabel("r/R")
+    plt.ylabel("Lift Coefficient Cl")
+    plt.title("Lift Coefficient Distribution")
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small')
+    plt.grid()
+    plt.savefig("figures/P51D-HS-Cl-distribution.png", bbox_inches='tight')
+    plt.clf()   
 
 if climb:
     data = pd.read_csv("output/P51D-climb-analysis.csv")
@@ -119,5 +134,19 @@ if climb:
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small')
     plt.grid()
     plt.savefig("figures/P51D-climbing-AoA-distribution.png", bbox_inches='tight')
+    plt.clf()
+
+    for i in range(alphas.shape[0]):
+        Cl = np.zeros(alphas.shape[1])
+        Cd = np.zeros(alphas.shape[1])
+        for j in range(alphas.shape[1]):
+            Cl[j], Cd[j], _ = naca16_509_m06(np.radians(alphas[i,j]))
+        plt.plot(np.linspace(0, 1, alphas.shape[1]), Cl, label=f"Altitude {altitude[i]:.0f} ft")
+    plt.xlabel("r/R")
+    plt.ylabel("Lift Coefficient Cl")
+    plt.title("Lift Coefficient Distribution")
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small')
+    plt.grid()
+    plt.savefig("figures/P51D-climbing-Cl-distribution.svg", bbox_inches='tight')
     plt.clf()
 
